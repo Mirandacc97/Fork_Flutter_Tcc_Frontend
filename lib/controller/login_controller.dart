@@ -1,65 +1,65 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'package:tcc1/view/home_screen.dart';
+import 'package:tcc1/view/home_screen.dart'; //
 
-class LoginControllor {
-  final TextEditingController emailController = TextEditingController();
+class LoginController {
+  final TextEditingController loginController = TextEditingController();
   final TextEditingController senhaController = TextEditingController();
 
-  // O método 'logar' agora é async para aguardar a resposta da API
   void login(BuildContext context) async {
-    final email = emailController.text;
-    final senha = senhaController.text;
-
-    // Use 10.0.2.2 para acessar o localhost da máquina host (onde o backend roda)
-    // a partir do Emulador Android.
-    // Se estiver rodando em web ou iOS, pode usar 'localhost:8080'.
-    final url = Uri.parse('http://10.0.2.2:8080/login'); // A porta 8080 é o padrão do backend
+    // 10.0.2.2 é para emulador Android. Se for iOS use localhost.
+    final url = Uri.parse('http://localhost:8080/login');
 
     try {
       final resposta = await http.post(
         url,
-        headers: {
-          'Content-Type': 'application/json; charset=UTF-8',
-        },
+        headers: {'Content-Type': 'application/json; charset=UTF-8'},
         body: jsonEncode({
-          'login': email,
-          'senha': senha,
+          'login': loginController.text,
+          'senha': senhaController.text,
         }),
-      );
+      ).timeout(const Duration(seconds: 5));
 
-      // O backend retorna 200 em sucesso ou 403 (Forbidden) se a senha estiver errada
+      print("Status: ${resposta.statusCode}");
+      print("Body: ${resposta.body}");
+
       if (resposta.statusCode == 200) {
-        // Sucesso na autenticação
-        // final dados = jsonDecode(resposta.body);
-        // (Aqui você guardaria o token JWT que o backend retorna)
+        final Map<String, dynamic> dados = jsonDecode(resposta.body);
 
-        // Navega para a HomeScreen SOMENTE se o login for bem-sucedido
-        if (context.mounted) {
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (context) => const HomeScreen()),
-          );
+        // CORREÇÃO CRÍTICA: Verificar se o backend disse "success: true"
+        if (dados['success'] == true) {
+          if (context.mounted) {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => const HomeScreen()),
+            );
+          }
+        } else {
+          // Se success: false, mostra o erro na tela
+          _showSnack(context, dados['message'] ?? 'Falha no login', Colors.red);
         }
       } else {
-        // Exibir falha ao usuário (Ex: Senha incorreta)
-        print('Erro no login: ${resposta.statusCode} | ${resposta.body}');
-        // (Implementar um SnackBar ou Dialog de erro aqui)
+        _showSnack(context, 'Erro HTTP: ${resposta.statusCode}', Colors.orange);
       }
     } catch (e) {
-      // Captura erros de conexão (Ex: Servidor backend desligado)
-      print('Erro de conexão: $e');
-      // (Implementar um SnackBar ou Dialog de erro de conexão aqui)
+      print(e);
+      _showSnack(context, 'Erro de Conexão: Verifique se o Server Dart está rodando.', Colors.red);
     }
   }
 
-  void senhaEsquecido() {
-    print("usuario esqueceu a senha");
+  void _showSnack(BuildContext context, String msg, Color color) {
+    if (context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(msg), backgroundColor: color),
+      );
+    }
   }
 
+  void senhaEsquecido() {}
+
   void dispose() {
-    emailController.dispose();
+    loginController.dispose();
     senhaController.dispose();
   }
 }

@@ -9,7 +9,7 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  final LoginControllor loginController = LoginControllor();
+  final LoginController loginController = LoginController();
 
   @override
   void dispose() {
@@ -45,16 +45,16 @@ class _LoginScreenState extends State<LoginScreen> {
                 const SizedBox(height: 48),
 
                 _buildTextField(
-                  controller: loginController.emailController,
-                  label: 'Email',
-                  hint: 'digite seu email',
+                  controller: loginController.loginController,
+                  label: 'Usuário',
+                  hint: 'Digite seu usuário',
                 ),
                 const SizedBox(height: 24),
 
                 _buildTextField(
                   controller: loginController.senhaController,
                   label: 'Senha',
-                  hint: 'digite sua senha',
+                  hint: '****',
                   isPassword: true,
                 ),
                 const SizedBox(height: 16),
