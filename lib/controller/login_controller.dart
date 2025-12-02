@@ -18,7 +18,7 @@ class LoginController {
           'login': loginController.text,
           'senha': senhaController.text,
         }),
-      );
+      ).timeout(const Duration(seconds: 2));
 
       if (resposta.statusCode == 200) {
         if (context.mounted) {
